@@ -1,4 +1,4 @@
-import { MAX_LOTTO_NUMBER } from '../../domain/constants';
+import { LOTTO_NUMBERS_COUNT } from '../../domain/constants';
 
 import { $, $$, dispatchCustomEvent } from '../../utils/dom';
 
@@ -13,55 +13,22 @@ class WinningNumbersSubmitForm {
         <div class="flex-col input-wrapper">
           <label for="winning-numbers-input">당첨 번호</label>
           <div>
-            <input
-              id="winning-numbers-input"
-              class="number-input"
-              type="number"
-              min="1"
-              max="45"
-              tabindex="1"
-              required
-            />
-            <input
-              class="number-input"
-              type="number"
-              min="1"
-              max="45"
-              tabindex="2"
-              required
-            />
-            <input
-              class="number-input"
-              type="number"
-              min="1"
-              max="45"
-              tabindex="3"
-              required
-            />
-            <input
-              class="number-input"
-              type="number"
-              min="1"
-              max="45"
-              tabindex="4"
-              required
-            />
-            <input
-              class="number-input"
-              type="number"
-              min="1"
-              max="45"
-              tabindex="5"
-              required
-            />
-            <input
-              class="number-input"
-              type="number"
-              min="1"
-              max="45"
-              tabindex="6"
-              required
-            />
+            ${Array(LOTTO_NUMBERS_COUNT)
+              .fill()
+              .map(
+                (_, index) => /* html */ `
+                <input
+                  id="winning-numbers-input"
+                  class="number-input"
+                  type="number"
+                  min="1"
+                  max="45"
+                  tabindex="${index + 1}"
+                  required
+                />
+            `
+              )
+              .join('')}
           </div>
         </div>
         <div class="flex-col input-wrapper">
@@ -84,6 +51,8 @@ class WinningNumbersSubmitForm {
   </form>
   `;
 
+  $target;
+
   FIRST_INPUT_INDEX = 1;
 
   LAST_INPUT_INDEX = 8;
@@ -97,37 +66,51 @@ class WinningNumbersSubmitForm {
     this.$target.insertAdjacentHTML('afterbegin', this.#template);
 
     const numberInputs = Array.from($$('.number-input'));
-    const [firstInput] = numberInputs;
-    firstInput.focus();
+    this.focusFirstInput(numberInputs);
     this.bindEvent(numberInputs);
+  }
+
+  focusFirstInput(inputs) {
+    const [firstInput] = inputs;
+
+    firstInput.focus();
   }
 
   bindEvent(numberInputs) {
     numberInputs.forEach((input) => {
       input.addEventListener('input', (e) => {
+        this.checkInputValidity(e.target);
         this.handleInputAutoFocusNext(numberInputs, e.target);
       });
     });
 
-    $('.winning-numbers-form').addEventListener('submit', (e) =>
-      this.handleSubmit(e)
-    );
+    this.$target.addEventListener('submit', (e) => this.handleSubmit(e));
+  }
+
+  checkInputValidity(input) {
+    if (input.checkValidity()) {
+      input.classList.add('valid');
+      input.classList.remove('invalid');
+      return;
+    }
+
+    input.classList.remove('valid');
+    input.classList.add('invalid');
   }
 
   handleInputAutoFocusNext(inputs, currentInput) {
-    const number = currentInput.valueAsNumber;
     const inputValueLength = currentInput.value.length;
     const nextInput = inputs.find(
       (input) => input.tabIndex === currentInput.tabIndex + 1
     );
 
-    if (this.canFocusNextInput({ number, inputValueLength, nextInput })) {
+    if (this.canFocusNextInput(inputValueLength, nextInput)) {
       nextInput.focus();
     }
   }
 
-  canFocusNextInput({ number, inputValueLength, nextInput }) {
-    return nextInput && number <= MAX_LOTTO_NUMBER && inputValueLength === 2;
+  canFocusNextInput(inputValueLength, nextInput) {
+    return inputValueLength === 2 && nextInput;
   }
 
   handleSubmit(e) {
