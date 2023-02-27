@@ -21,14 +21,14 @@ button {
 }
 
 #app {
-  height: 924px;
+  height: 1024px;
 }
 
 .check-winning-section {
   display: flex;
-  align-items: center;
   justify-content: center;
-  height: 780px;
+  height: 880px;
+  padding-top: 20px;
 }
 
 .container {

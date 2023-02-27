@@ -4,7 +4,7 @@ import { $, dispatchCustomEvent } from '../../utils/dom';
 
 class WinningStatModal {
   #template = /* html */ `
-    <div class="dimmed flex-center">
+    <div class="dimmed">
       <div class="modal-content">
         <div class="button-wrapper">
           <button class="modal-close-button">
